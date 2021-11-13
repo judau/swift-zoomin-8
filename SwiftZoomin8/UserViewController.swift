@@ -1,7 +1,7 @@
 import UIKit
 import Combine
 
-final class UserViewController: UIViewController {
+@MainActor final class UserViewController: UIViewController {
     let id: User.ID
     let uvs: UserViewState
     
@@ -11,7 +11,7 @@ final class UserViewController: UIViewController {
 
     init(id: User.ID) {
         self.id = id
-        self.uvs = UserViewState(id: id)
+        uvs = UserViewState(id: id)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -25,19 +25,10 @@ final class UserViewController: UIViewController {
         do {
             let task = Task { [weak self] in
                 guard let uvs = self?.uvs else { return }
-                for await value in await uvs.$user.values {
+                for await _ in uvs.objectWillChange.values {
                     guard let self = self else { return }
-                    self.nameLabel.text = value?.name
-                }
-            }
-            cancellables.insert(.init { task.cancel() })
-        }
-        do {
-            let task = Task { [weak self] in
-                guard let uvs = self?.uvs else { return }
-                for await value in await uvs.$iconImage.values {
-                    guard let self = self else { return }
-                    self.iconImageView.image = value
+                    self.nameLabel.text = uvs.user?.name
+                    self.iconImageView.image = uvs.iconImage
                 }
             }
             cancellables.insert(.init { task.cancel() })
