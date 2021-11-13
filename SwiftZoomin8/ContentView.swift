@@ -13,6 +13,11 @@ struct ContentView: View {
                 } label: {
                     Text("User View")
                 }
+                NavigationLink {
+                    UserView(id: 1234)
+                } label: {
+                    Text("User View (SwiftUI)")
+                }
                 Button {
                     counterMain1()
                 } label: {
