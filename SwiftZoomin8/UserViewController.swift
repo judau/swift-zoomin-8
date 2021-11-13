@@ -22,20 +22,25 @@ final class UserViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        Task {
-            await uvs.$user
-                    .receive(on: DispatchQueue.main)
-                    .sink { [weak self] user in
-                        self?.nameLabel.text = user?.name
-                    }
-                    .store(in: &cancellables)
-
-            await uvs.$iconImage
-                    .receive(on: DispatchQueue.main)
-                    .sink { [weak self] iconImage in
-                        self?.iconImageView.image = iconImage
-                    }
-                    .store(in: &cancellables)
+        do {
+            let task = Task { [weak self] in
+                guard let uvs = self?.uvs else { return }
+                for await value in await uvs.$user.values {
+                    guard let self = self else { return }
+                    self.nameLabel.text = value?.name
+                }
+            }
+            cancellables.insert(.init { task.cancel() })
+        }
+        do {
+            let task = Task { [weak self] in
+                guard let uvs = self?.uvs else { return }
+                for await value in await uvs.$iconImage.values {
+                    guard let self = self else { return }
+                    self.iconImageView.image = value
+                }
+            }
+            cancellables.insert(.init { task.cancel() })
         }
         
         // レイアウト
@@ -69,3 +74,4 @@ final class UserViewController: UIViewController {
 }
 
 extension Published.Publisher: @unchecked Sendable where Output: Sendable {}
+extension UIImage: @unchecked Sendable {}

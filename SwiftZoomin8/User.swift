@@ -16,3 +16,5 @@ struct User: Codable {
         var description: String { rawValue.description }
     }
 }
+
+extension URL: @unchecked Sendable {}
