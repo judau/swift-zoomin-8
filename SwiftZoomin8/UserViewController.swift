@@ -68,4 +68,4 @@ final class UserViewController: UIViewController {
     }
 }
 
-extension Published.Publisher: @unchecked Sendable {}
+extension Published.Publisher: @unchecked Sendable where Output: Sendable {}
